@@ -14,7 +14,7 @@ class WebView  {
 	#end
 
 	#if android
-	private static var _open :String -> Bool -> Array<String> -> Array<String> -> Void = null;
+	private static var _open :String -> Bool -> Bool -> Array<String> -> Array<String> -> Void = null;
 	#end
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,12 +26,12 @@ class WebView  {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	public static function open (url: String = null, floating :Bool = false, ?urlWhitelist :Array<String>, ?urlBlacklist :Array<String>) :Void {
+	public static function open (url: String = null, floating :Bool = false, preventBack:Bool = false, ?urlWhitelist :Array<String>, ?urlBlacklist :Array<String>) :Void {
 		init();
 		if(urlWhitelist!=null) urlWhitelist.push(url);
 		
 		#if android
-			_open(url, floating, urlWhitelist, urlBlacklist);
+			_open(url, floating, preventBack, urlWhitelist, urlBlacklist);
 		#elseif ios
 			if (listener == null) listener = new WebViewListener(urlWhitelist, urlBlacklist);
 			APICall("init", [listener, floating]);
@@ -58,7 +58,7 @@ class WebView  {
 		initialized = true;
 		try {
 			#if android
-			_open = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "open", "(Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;)V");
+			_open = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "open", "(Ljava/lang/String;ZZ[Ljava/lang/String;[Ljava/lang/String;)V");
 			var _callbackFunc = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "setCallback", "(Lorg/haxe/lime/HaxeObject;)V");
             _callbackFunc(WebView);
 

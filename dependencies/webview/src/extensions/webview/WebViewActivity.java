@@ -24,6 +24,7 @@ public class WebViewActivity extends Activity {
 	
 	protected String url;
 	protected boolean floating;
+    protected boolean preventBack;
 	protected String[] urlWhitelist;
 	protected String[] urlBlacklist;
 	protected HaxeObject callback;
@@ -40,6 +41,7 @@ public class WebViewActivity extends Activity {
 		floating = getIntent().getExtras().getBoolean(WebViewExtension.EXTRA_FLOATING);
 		urlWhitelist = getIntent().getExtras().getStringArray(WebViewExtension.EXTRA_URL_WHITELIST);
 		urlBlacklist = getIntent().getExtras().getStringArray(WebViewExtension.EXTRA_URL_BLACKLIST);
+		preventBack = getIntent().getExtras().getBoolean(WebViewExtension.EXTRA_PREVENT_BACK);
 		callback = WebViewExtension.callback;
 
 		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
@@ -55,6 +57,8 @@ public class WebViewActivity extends Activity {
 
 	protected void initUI()
 	{
+        hideSystemUI();
+
 		// Load layout from resources
 		setContentView(layoutResource);
 		
@@ -171,6 +175,20 @@ public class WebViewActivity extends Activity {
 		webViewPlaceholder.addView(webView);
 	}
 
+    private void hideSystemUI() {
+        // Set the IMMERSIVE flag.
+        // Set the content to appear under the system bars so that the content
+        // doesn't resize when the system bars hide and show.
+        getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
+    }
+
+
 	@Override
 	public void onConfigurationChanged(Configuration newConfig)
 	{
@@ -209,6 +227,9 @@ public class WebViewActivity extends Activity {
 
 	@Override
 	public void onBackPressed() {
+        if(preventBack)
+            return;
+
 		if (webView.canGoBack())
 			webView.goBack();
 		else
