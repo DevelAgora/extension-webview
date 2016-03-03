@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -71,6 +72,32 @@ public class WebViewActivity extends Activity {
 		// Initialize the UI
 		initUI();
 	}
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus && !floating) {
+            int uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+
+            // Navigation bar hiding:  Backwards compatible to ICS.
+            if (Build.VERSION.SDK_INT >= 14) {
+                uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            }
+
+            // Status bar hiding: Backwards compatible to Jellybean
+            if (Build.VERSION.SDK_INT >= 16) {
+                uiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+            }
+
+            // Immersive mode: Backward compatible to KitKat.
+            if (Build.VERSION.SDK_INT >= 18) {
+                uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            }
+            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+        }
+    }
 
 	protected void initUI()
 	{
