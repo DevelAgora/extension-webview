@@ -15,6 +15,7 @@ class WebView  {
 
 	#if android
 	private static var _open :String -> Bool -> Bool -> Array<String> -> Array<String> -> Void = null;
+	private static var _close :Void -> Void = null;
 	#end
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -39,14 +40,18 @@ class WebView  {
 		#end
 	}
 
+    public static function close():Void {
+        #if android
+        _close();
+        #elseif ios
+        if (listener != null) APICall("destroy");
+        #end
+    }
+
 	#if ios
 	public static function navigate(url:String):Void {
 		if (url==null) return;
 		if (listener != null) APICall("navigate", [url]);
-	}
-	
-	public static function close():Void {
-		if (listener != null) APICall("destroy");
 	}
 	#end
 
@@ -59,6 +64,7 @@ class WebView  {
 		try {
 			#if android
 			_open = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "open", "(Ljava/lang/String;ZZ[Ljava/lang/String;[Ljava/lang/String;)V");
+			_close = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "close", "()V");
 			var _callbackFunc = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "setCallback", "(Lorg/haxe/lime/HaxeObject;)V");
             _callbackFunc(WebView);
 

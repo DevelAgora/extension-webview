@@ -1,19 +1,23 @@
 package extensions.webview;
 
-import java.util.regex.PatternSyntaxException;
-
-import android.os.Bundle;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.webkit.WebView;
 import android.webkit.WebSettings;
+import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import org.haxe.lime.HaxeObject;
+
+import java.util.regex.PatternSyntaxException;
 
 public class WebViewActivity extends Activity {
 	
@@ -35,7 +39,20 @@ public class WebViewActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		
+
+        // Close the activity externally
+        BroadcastReceiver broadcast_receiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context arg0, Intent intent) {
+                String action = intent.getAction();
+                if (action.equals(WebViewExtension.FINISH_EVENT)) {
+                    finish();
+                }
+            }
+        };
+        registerReceiver(broadcast_receiver, new IntentFilter(WebViewExtension.FINISH_EVENT));
+
 		// Load parameters from intent
 		url = getIntent().getExtras().getString(WebViewExtension.EXTRA_URL);
 		floating = getIntent().getExtras().getBoolean(WebViewExtension.EXTRA_FLOATING);
@@ -237,14 +254,14 @@ public class WebViewActivity extends Activity {
 	}
 
 	public void onClosePressed(View view) {
-		callback.call("onClose", new Object[] {});
 		finish();
 	}
 
 	@Override
 	public void finish(){
 		super.finish();
-		WebViewExtension.active=false;
+        callback.call("onClose", new Object[] {});
+        WebViewExtension.active=false;
         webView.clearHistory();
         webView.loadUrl("about:blank");
         webViewPlaceholder.removeView(webView);

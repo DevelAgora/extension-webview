@@ -11,6 +11,9 @@ public class WebViewExtension extends Extension {
 	public static final String EXTRA_URL_WHITELIST = "extensions.webviewex.EXTRA_URL_WHITELIST";
 	public static final String EXTRA_URL_BLACKLIST = "extensions.webviewex.EXTRA_URL_BLACKLIST";
 	public static final String EXTRA_PREVENT_BACK = "extensions.webviewex.EXTRA_PREVENT_BACK";
+
+    public static final String FINISH_EVENT = "finish";
+
 	public static boolean active = false;
 
 	public static HaxeObject callback;
@@ -24,11 +27,14 @@ public class WebViewExtension extends Extension {
 		intent.putExtra(EXTRA_URL_WHITELIST, urlWhitelist);
 		intent.putExtra(EXTRA_URL_BLACKLIST, urlBlacklist);
         intent.putExtra(EXTRA_PREVENT_BACK, preventBack);
-		
 		mainActivity.startActivity(intent);
 		active = true;
-
 	}
+
+    public static void close() {
+        Intent intent = new Intent(FINISH_EVENT);
+        mainActivity.sendBroadcast(intent);
+    }
 	
 	public static boolean isActive(){
 		return active;
