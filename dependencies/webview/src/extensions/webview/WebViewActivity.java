@@ -33,6 +33,7 @@ public class WebViewActivity extends Activity {
 	protected String[] urlWhitelist;
 	protected String[] urlBlacklist;
 	protected HaxeObject callback;
+    protected BroadcastReceiver broadcast_receiver;
 	
 	protected int layoutResource;
 
@@ -42,7 +43,7 @@ public class WebViewActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
         // Close the activity externally
-        BroadcastReceiver broadcast_receiver = new BroadcastReceiver() {
+        broadcast_receiver = new BroadcastReceiver() {
 
             @Override
             public void onReceive(Context arg0, Intent intent) {
@@ -72,6 +73,19 @@ public class WebViewActivity extends Activity {
 		// Initialize the UI
 		initUI();
 	}
+
+    @Override
+    public void onDestroy() {
+        try
+        {
+            unregisterReceiver(broadcast_receiver);
+        }
+        catch(Exception e)
+        {
+
+        }
+        super.onDestroy();
+    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
