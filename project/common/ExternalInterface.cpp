@@ -27,3 +27,9 @@ DEFINE_PRIM (webviewAPINavigate, 1);
 
 void webviewAPIDestroy(){ destroy(); }
 DEFINE_PRIM (webviewAPIDestroy, 0);
+
+void webviewAPISetPosition (value x, value y) { setPosition(val_int(x), val_int(y)); }
+DEFINE_PRIM (webviewAPISetPosition, 2);
+
+void webviewAPISetSize (value width, value height) { setSize(val_int(width), val_int(height)); }
+DEFINE_PRIM (webviewAPISetSize, 2);

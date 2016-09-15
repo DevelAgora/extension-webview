@@ -9,9 +9,7 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
+import android.view.*;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -42,18 +40,26 @@ public class WebViewActivity extends Activity {
 	{
 		super.onCreate(savedInstanceState);
 
-        // Close the activity externally
         broadcast_receiver = new BroadcastReceiver() {
 
             @Override
             public void onReceive(Context arg0, Intent intent) {
+
                 String action = intent.getAction();
                 if (action.equals(WebViewExtension.FINISH_EVENT)) {
                     finish();
                 }
+                else if(action.equals(WebViewExtension.SET_POSITION_EVENT)) {
+                    updateLayoutParams();
+                }
+                else if(action.equals(WebViewExtension.SET_SIZE_EVENT)) {
+                    updateLayoutParams();
+                }
             }
         };
         registerReceiver(broadcast_receiver, new IntentFilter(WebViewExtension.FINISH_EVENT));
+        registerReceiver(broadcast_receiver, new IntentFilter(WebViewExtension.SET_POSITION_EVENT));
+        registerReceiver(broadcast_receiver, new IntentFilter(WebViewExtension.SET_SIZE_EVENT));
 
 		// Load parameters from intent
 		url = getIntent().getExtras().getString(WebViewExtension.EXTRA_URL);
@@ -123,7 +129,7 @@ public class WebViewActivity extends Activity {
 		// Retrieve UI elements
 		webViewPlaceholder = ((FrameLayout)findViewById(R.id.webViewPlaceholder));
 
-		// Initialize the WebView if necessary
+        // Initialize the WebView if necessary
 		if (webView == null)
 		{
 			// Create the webview
@@ -227,11 +233,23 @@ public class WebViewActivity extends Activity {
 			// Load the page
 			callback.call("onURLChanging", new Object[] {url});
 			webView.loadUrl(url);
-		}
+        }
 
 		// Attach the WebView to its placeholder
 		webViewPlaceholder.addView(webView);
-	}
+
+        updateLayoutParams();
+    }
+
+    private void updateLayoutParams() {
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) webView.getLayoutParams();
+        params.leftMargin = WebViewExtension.x;
+        params.topMargin = WebViewExtension.y;
+        params.width = WebViewExtension.width;
+        params.height = WebViewExtension.height;
+
+        webView.setLayoutParams(params);
+    }
 
     private void hideSystemUI() {
         // Set the IMMERSIVE flag.

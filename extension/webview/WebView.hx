@@ -8,7 +8,9 @@ class WebView  {
 	private static var APISetCallback:Dynamic=null;
 	private static var APINavigate:Dynamic=null;
 	private static var APIDestroy:Dynamic=null;
-	
+	private static var APISetPosition:Dynamic=null;
+	private static var APISetSize:Dynamic=null;
+
 	#if ios
 	private static var listener:WebViewListener;
 	#end
@@ -16,6 +18,8 @@ class WebView  {
 	#if android
 	private static var _open :String -> Bool -> Bool -> Array<String> -> Array<String> -> Void = null;
 	private static var _close :Void -> Void = null;
+    private static var _setPosition :Int -> Int -> Void;
+    private static var _setSize :Int -> Int -> Void;
 	#end
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,6 +52,25 @@ class WebView  {
         #end
     }
 
+    public static function setPosition(x:Int, y:Int):Void {
+        if(!initialized)
+            return;
+
+        #if android
+        _setPosition(x, y);
+        #elseif ios
+        APICall("setPosition", [x, y]);
+        #end
+    }
+
+    public static function setSize(width:Int, height:Int):Void {
+        #if android
+        _setSize(width, height);
+        #elseif ios
+        APICall("setSize", [width, height]);
+        #end
+    }
+
 	#if ios
 	public static function navigate(url:String):Void {
 		if (url==null) return;
@@ -65,6 +88,8 @@ class WebView  {
 			#if android
 			_open = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "open", "(Ljava/lang/String;ZZ[Ljava/lang/String;[Ljava/lang/String;)V");
 			_close = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "close", "()V");
+            _setPosition = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "setPosition", "(II)V");
+			_setSize = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "setSize", "(II)V");
 			var _callbackFunc = openfl.utils.JNI.createStaticMethod("extensions/webview/WebViewExtension", "setCallback", "(Lorg/haxe/lime/HaxeObject;)V");
             _callbackFunc(WebView);
 
@@ -72,6 +97,8 @@ class WebView  {
             APIInit     = cpp.Lib.load("webviewex","webviewAPIInit", 3);
 			APINavigate = cpp.Lib.load("webviewex","webviewAPINavigate", 1);
 			APIDestroy  = cpp.Lib.load("webviewex","webviewAPIDestroy", 0);
+			APISetPosition  = cpp.Lib.load("webviewex","webviewAPISetPosition", 2);
+			APISetSize  = cpp.Lib.load("webviewex","webviewAPISetSize", 2);
 			#end
 
 		} catch(e:Dynamic) {
@@ -93,10 +120,14 @@ class WebView  {
             if (method == "callback") APISetCallback(args[0]);
             if (method == "navigate") APINavigate(args[0]);
             if (method == "destroy") APIDestroy();
+            if (method == "setPosition") APISetPosition(args[0], args[1]);
+            if (method == "setSize") APISetSize(args[0], args[1]);
 			#elseif ios
 			if (method == "init") APIInit(args[0].onClose, args[0].onURLChanging, args[1]);
             if (method == "navigate") APINavigate(args[0]);
             if (method == "destroy") APIDestroy();
+            if (method == "setPosition") APISetPosition(args[0], args[1]);
+            if (method == "setSize") APISetSize(args[0], args[1]);
 			#end
 		} catch(e:Dynamic) {
 			trace("APICall Exception [" + method + ", " + args + "]: "+e);

@@ -36,10 +36,16 @@ namespace webviewex {
 	WebViewDelegate *webViewDelegate;
 	AutoGCRoot *onDestroyedCallback = 0;
 	AutoGCRoot *onURLChangingCallback = 0;
+    int x = -1;
+    int y = -1;
+    int width = -1;
+    int height = -1;
 	void init(value, value, bool);
 	void updateSize();
 	void navigate(const char *);
 	void destroy();
+    void setPosition(int x, int y);
+    void setSize(int width, int height);
 	void onUrlChanging(NSString *);
     void onOrientationChanged (NSNotification *);
 
@@ -88,18 +94,20 @@ namespace webviewex {
 		bool withPopup = closeButton != nil;
 		CGRect screen = [[UIScreen mainScreen] bounds];
         CGFloat screenScale = [[UIScreen mainScreen] scale];
-        
-        int padding = 58;
-        
-        if(screenScale > 1.0) {
-            padding = 59;
+
+        int padding = 0;
+        if(withPopup) {
+            padding = (screenScale > 1.0) ? 59 : 58;
+            padding /= 4;
         }
-        
-        padding /= 4;
-        if(!withPopup) padding = 0;
+
+        int newX = x != -1 ? x : 0;
+        int newY = y != -1 ? y : 0;
+        int newWidth = width != -1 ? width : screen.size.width;
+        int newHeight = height != -1 ? height : screen.size.height;
 
 		if(instance != nil) {
-			instance.frame = CGRectMake(padding, padding, screen.size.width - (padding * 2), screen.size.height - (padding * 2));
+			instance.frame = CGRectMake(newX + padding, newY + padding, newWidth - (padding * 2), newHeight - (padding * 2));
 		}
 
 		if(closeButton != nil) {
@@ -129,6 +137,18 @@ namespace webviewex {
 		[instance release];
 		instance=nil;
 	}
+
+    void setPosition(int newX, int newY){
+        x = newX;
+        y = newY;
+        updateSize();
+    }
+
+    void setSize(int newWidth, int newHeight){
+        width = newWidth;
+        height = newHeight;
+        updateSize();
+    }
 	
 	void onUrlChanging (NSString *url) {
 		val_call1(onURLChangingCallback->get(), alloc_string([url cStringUsingEncoding:NSUTF8StringEncoding]));
